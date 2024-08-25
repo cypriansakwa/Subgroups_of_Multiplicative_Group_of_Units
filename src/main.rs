@@ -15,40 +15,46 @@ fn multiplicative_group_elements(n: u64) -> Vec<u64> {
 }
 
 // Function to generate a cyclic subgroup of Z_n^* given a generator
-fn generate_subgroup(n: u64, generator: u64) -> HashSet<u64> {
-    let mut subgroup = HashSet::new();
+fn generate_subgroup(n: u64, generator: u64) -> Vec<u64> {
+    let mut subgroup = Vec::new();
     let mut current = generator;
     while !subgroup.contains(&current) {
-        subgroup.insert(current);
+        subgroup.push(current);
         current = (current * generator) % n;
     }
+    subgroup.sort_unstable();
     subgroup
 }
 
 // Function to generate all subgroups of Z_n^*
-fn generate_all_subgroups(n: u64) -> Vec<HashSet<u64>> {
+fn generate_all_subgroups(n: u64) -> Vec<Vec<u64>> {
     let elements = multiplicative_group_elements(n);
     let mut subgroups = Vec::new();
-    let mut seen: HashSet<u64> = HashSet::new(); // Type annotation added
+    let mut seen_subgroups = HashSet::new();
+
+    // Add the full group as a potential subgroup
+    if !elements.is_empty() {
+        subgroups.push(elements.clone());
+        seen_subgroups.insert(elements.clone());
+    }
 
     for &e in &elements {
-        if !seen.contains(&e) {
-            let subgroup = generate_subgroup(n, e);
-            seen.extend(&subgroup);
+        let subgroup = generate_subgroup(n, e);
+        if !seen_subgroups.contains(&subgroup) {
+            seen_subgroups.insert(subgroup.clone());
             subgroups.push(subgroup);
         }
     }
+
     subgroups
 }
 
 fn main() {
-    let n = 34; // Replace with the desired value of n
+    let n = 8; // Replace with the desired value of n
     let subgroups = generate_all_subgroups(n);
     println!("Subgroups of Z_{}^*:", n);
     for subgroup in subgroups {
-        let mut subgroup_vec: Vec<u64> = subgroup.into_iter().collect();
-        subgroup_vec.sort_unstable();
-        println!("{:?}", subgroup_vec);
+        println!("{:?}", subgroup);
     }
 }
 
